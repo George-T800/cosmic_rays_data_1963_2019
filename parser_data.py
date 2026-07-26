@@ -1,9 +1,9 @@
 # კოდი შექმნილია იზმირანის სადგურიდან თბილისის კოსმოსური სხივების მონაცემების წამოსაღებად
 # კოდი შექმნილია გიორგი თაყაძის მიერ
-
 import os
 import time
 import re
+from urllib.parse import urljoin
 import requests
 from urllib.parse import urljoin
 
@@ -16,27 +16,27 @@ HEADERS = {
 
 
 def txt_failis_wamogeba(sesia):
-    resp = sesia.get(datas_ver_gverdis_linki, headers=HEADERS, timeout=30)
-    resp.raise_for_status()
-    failis_saxeli = re.findall(r'href="([^"]+\.txt)"', resp.text, flags=re.IGNORECASE)
+    rp = sesia.get(datas_ver_gverdis_linki, headers=HEADERS, timeout=30)
+    rp.raise_for_status()
+    failis_saxeli = re.findall(r'href="([^"]+\.txt)"', rp.text, flags=re.IGNORECASE)
     failis_saxeli = [os.path.basename(f) for f in failis_saxeli]
     return sorted(set(failis_saxeli))
 
 
-def failis_chamotvirtva(sesia, failis_saxeli, retries=3):
+def failis_chamotvirtva(sesia, failis_saxeli, gameoreba=3):
     url = urljoin(datas_ver_gverdis_linki, failis_saxeli)
-    out_path = os.path.join(OUT_DIR, failis_saxeli)
+    chawera = os.path.join(OUT_DIR, failis_saxeli)
 
-    for i in range(1, retries + 1):
+    for i in range(1, gameoreba + 1):
         try:
-            resp = sesia.get(url, headers=HEADERS, timeout=60)
-            resp.raise_for_status()
-            with open(out_path, "w", encoding="utf-8") as f:
-                f.write(resp.text)
-            print(f"[OK] {failis_saxeli}  ({len(resp.text)} bytes)")
+            rp = sesia.get(url, headers=HEADERS, timeout=60)
+            rp.raise_for_status()
+            with open(chawera, "w", encoding="utf-8") as f:
+                f.write(rp.text)
+            print(f"[ok] {failis_saxeli}  ({len(rp.text)} bytes)")
             return True
         except requests.RequestException as e:
-            print(f"[{i}/{retries}] shecdoma {failis_saxeli}: {e}")
+            print(f"[{i}/{gameoreba}] shecdoma {failis_saxeli}: {e}")
             time.sleep(2 * i)
     print(f"[dafeilda] {failis_saxeli} — ver chamoitvirta")
     return False
